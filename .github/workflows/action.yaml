@@ -1,27 +1,40 @@
-name: Test banking
-run-name: ${{ github.actor }} is running Banking tests
-on: [push]
 
-jobs: 
- test:
-  runs-on: ubuntu-latest
-  steps:
-  - uses: actions/checkout@v4
+name: CPack
 
-  - name: Adding gtest
-    run: git clone https://github.com/google/googletest.git ${{github.workspace}}/third-party/gtest -b release-1.12.1
+on:
+  push:
+    branches: [branch1]
+  pull_request:
+    branches: [branch1]
 
-  - name: Install lcov
-    run: sudo apt-get install -y lcov
+jobs:
+  build_packages_Linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '20'
+      - name: Config solver
+        run: cmake ${{github.workspace}} -B ${{github.workspace}}/build -D PRINT_VERSION=1.0.0
 
-  - name: Config banking with tests
-    run: cmake -B ${{github.workspace}}/.build -D BUILD_TESTS=ON
+      - name: Build solver
+        run: cmake --build ${{github.workspace}}/build
 
-  - name: Build banking
-    run: cmake --build ${{github.workspace}}/.build
+      - name: Build package
+        run: cmake --build ${{github.workspace}}/build --target package
 
-  - name: Run tests
-    run: ${{github.workspace}}/.build/check
+      - name: Build source package
+        run: cmake --build ${{github.workspace}}/build --target package_source
 
-  - name: Do lcov stuff
-    run: lcov -c -d ${{github.workspace}}/.build/CMakeFiles/banking.dir/banking/ --include *.cpp --output-file ${{github.workspace}}/coverage/lcov.info
+      - name: Make a release
+        uses: ncipollo/release-action@v1.10.0
+        with:
+          tag: v1.3.0
+          artifacts: "build/*.deb,build/*.tar.gz,build/*.zip"
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: solver
+          path: build/solver
