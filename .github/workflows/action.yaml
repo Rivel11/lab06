@@ -3,9 +3,9 @@ name: CPack
 
 on:
   push:
-    branches: [branch1]
+    branches: [master]
   pull_request:
-    branches: [branch1]
+    branches: [master]
 
 jobs:
   build_packages_Linux:
