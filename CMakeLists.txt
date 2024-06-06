@@ -21,6 +21,6 @@ install(TARGETS solver
     RUNTIME DESTINATION bin
 )
 
-set(CPACK_PACKAGE_VERSION 1.0.0)
+set(CPACK_PACKAGE_VERSION 1.1.0)
 
 include(CPack.cmake)
