@@ -29,26 +29,18 @@ jobs:
       - name: Make a release
         uses: ncipollo/release-action@v1.10.0
         with:
-          tag: v1.6.0
+          tag: v1.3.0
           artifacts: "build/*.deb,build/*.tar.gz,build/*.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Install NSIS
+        run: sudo apt-get install nsis
+
+      - name: Build Windows package
+        run: cmake --build ${{github.workspace}}/build --target package_win
+      
       - name: Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: solver
           path: build/solver
-
-  build_installer_Windows:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up WiX Toolset
-        run: choco install wix
-      - name: Build WiX installer
-        run: |
-          powershell ./build-installer.ps1
-      - name: Upload Installer
-        uses: actions/upload-artifact@v4
-        with:
-          name: SolverInstaller
-          path: SolverInstaller.msi
