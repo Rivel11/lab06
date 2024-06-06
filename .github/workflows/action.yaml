@@ -29,7 +29,7 @@ jobs:
       - name: Make a release
         uses: ncipollo/release-action@v1.10.0
         with:
-          tag: v1.5.0
+          tag: v1.6.0
           artifacts: "build/*.deb,build/*.tar.gz,build/*.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Artifacts
@@ -38,35 +38,17 @@ jobs:
           name: solver
           path: build/solver
 
-  build_packages_Windows:
+  build_installer_Windows:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '20'
-      - name: Install Inno Setup
-        uses: dschaefer/innosetup-compiler-action@v1
-      - name: Config solver
-        run: cmake ${{github.workspace}} -B ${{github.workspace}}/build -D PRINT_VERSION=1.0.0
-
-      - name: Build solver
-        run: cmake --build ${{github.workspace}}/build
-
-      - name: Build package
-        run: cmake --build ${{github.workspace}}/build --target package
-
-      - name: Create Inno Setup installer
-        run: iscc path/to/your_script.iss
-
-      - name: Make a release
-        uses: ncipollo/release-action@v1.10.0
-        with:
-          tag: v1.5.0
-          artifacts: "build/*.exe,build/*.zip"
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Artifacts
+      - name: Set up WiX Toolset
+        run: choco install wix
+      - name: Build WiX installer
+        run: |
+          powershell ./build-installer.ps1
+      - name: Upload Installer
         uses: actions/upload-artifact@v4
         with:
-          name: solver-windows
-          path: build/solver-windows
+          name: SolverInstaller
+          path: SolverInstaller.msi
